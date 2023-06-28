@@ -1,8 +1,10 @@
 import 'dart:io';
 
 import 'package:derry/error.dart' show DerryError, ErrorCode;
+import 'package:derry/src/error/error_codes/scripts_has_wrong_type_error.dart';
+import 'package:derry/src/error/error_codes/missing_script_error.dart';
 import 'package:derry/utils.dart'
-    show JsonMap, ToJsonMapExtension, readYamlMap, Info;
+    show Info, JsonMap, ToJsonMapExtension, readYamlMap;
 import 'package:path/path.dart' as path;
 
 const String pubspecFileName = 'pubspec.yaml';
@@ -54,7 +56,7 @@ class Pubspec {
     final scripts = content[scriptsKey];
 
     if (scripts == null) {
-      throw DerryError(type: ErrorCode.missingScripts);
+      throw MissingScriptError();
     }
 
     if (scripts is Map) {
@@ -62,7 +64,7 @@ class Pubspec {
     } else if (scripts is String) {
       return scripts;
     } else {
-      throw DerryError(type: ErrorCode.invalidScripts);
+      throw ScriptsHasWrongTypeError();
     }
   }
 

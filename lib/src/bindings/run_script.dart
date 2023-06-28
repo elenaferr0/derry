@@ -2,6 +2,9 @@ import 'dart:ffi' as ffi;
 import 'dart:isolate' show Isolate;
 
 import 'package:derry/error.dart' show DerryError, ErrorCode;
+import 'package:derry/src/error/error_codes/invalid_blob_error.dart';
+import 'package:derry/src/error/error_codes/invalid_package_uri_error.dart';
+import 'package:derry/src/error/error_codes/platform_not_supported_error.dart';
 import 'package:ffi/ffi.dart' show StringUtf8Pointer, Utf8;
 import 'package:path/path.dart' as path;
 
@@ -24,10 +27,7 @@ String getBlobFilename() {
   final currentAbi = ffi.Abi.current();
 
   if (!supported.containsKey(currentAbi)) {
-    throw DerryError(
-      type: ErrorCode.platformNotSupported,
-      body: {'abi': currentAbi},
-    );
+    throw PlatformNotSupportedError(abi: currentAbi);
   }
 
   return supported[currentAbi]!;
@@ -38,10 +38,7 @@ Future<int> runScript(String script) async {
   final resolvedPackageUri =
       await Isolate.resolvePackageUri(Uri.parse(packageUri));
   if (resolvedPackageUri == null) {
-    throw DerryError(
-      type: ErrorCode.invalidPackageUri,
-      body: {'packageUri': packageUri},
-    );
+    throw InvalidPackageUriError(packageUri: packageUri);
   }
 
   final objectFilePath = resolvedPackageUri
@@ -51,10 +48,7 @@ Future<int> runScript(String script) async {
   try {
     dylib = ffi.DynamicLibrary.open(objectFilePath);
   } catch (e) {
-    throw DerryError(
-      type: ErrorCode.invalidBlob,
-      body: {'path': objectFilePath, 'origin': e},
-    );
+    throw InvalidBlobError(path: objectFilePath, origin: e);
   }
 
   final nativeRunScriptFn = dylib

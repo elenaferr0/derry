@@ -1,4 +1,5 @@
 import 'package:derry/error.dart';
+import 'package:derry/src/error/error_codes/no_script_for_current_os_error.dart';
 import 'package:equatable/equatable.dart';
 
 import 'os.dart';
@@ -60,10 +61,7 @@ class Definition extends Equatable {
       final scripts = _toStringList(allScripts);
 
       if (scripts.isEmpty) {
-        throw DerryError(
-          type: ErrorCode.noScriptForCurrentOs,
-          body: {'script': scriptName},
-        );
+        throw NoScriptForCurrentOsError(script: scriptName!);
       }
 
       return Definition(

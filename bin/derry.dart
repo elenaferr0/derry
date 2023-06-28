@@ -36,7 +36,7 @@ Future<int> runDerry(List<String> arguments) async {
       return exitCode as int? ?? 0;
       // ignore: avoid_catching_errors
     } on DerryError catch (error) {
-      handleError(error);
+      error.print();
       return 1;
     } catch (exception) {
       if (exception is UsageException &&

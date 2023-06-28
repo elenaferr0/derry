@@ -1,6 +1,11 @@
 import 'dart:io' show File, Directory, IOOverrides;
 
 import 'package:derry/error.dart';
+import 'package:derry/src/error/error_codes/file_not_found_error.dart';
+import 'package:derry/src/error/error_codes/script_not_defined_error.dart';
+import 'package:derry/src/error/error_codes/scripts_has_wrong_type_error.dart';
+import 'package:derry/src/error/error_codes/invalid_script_error.dart';
+import 'package:derry/src/error/error_codes/missing_script_error.dart';
 import 'package:derry/utils.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
@@ -194,9 +199,11 @@ version: 0.0.0""";
         // getSource
         // if scripts field is null
         expect(Pubspec.source, equals(null));
+
+        final source = await pubspec.getSource();
         expect(
-          pubspec.getSource(),
-          throwsA(equals(DerryError(type: ErrorCode.missingScripts))),
+          source,
+          throwsA(equals(MissingScriptError())),
         );
 
         await Future.delayed(const Duration(seconds: 1));
@@ -205,7 +212,7 @@ version: 0.0.0""";
         Pubspec.content![scriptsKey] = 0;
         expect(
           pubspec.getSource(),
-          throwsA(equals(DerryError(type: ErrorCode.invalidScript))),
+          throwsA(equals(ScriptsHasWrongTypeError())),
         );
 
         await Future.delayed(const Duration(seconds: 1));
@@ -267,14 +274,7 @@ c:
     test("read_yaml_map should fail when there's not a file", () {
       expect(
         readYamlMap('yaml'),
-        throwsA(
-          equals(
-            DerryError(
-              type: ErrorCode.fileNotFound,
-              body: {'path': 'yaml'},
-            ),
-          ),
-        ),
+        throwsA(equals(FileNotFoundError(path: 'yaml'))),
       );
     });
 
@@ -356,13 +356,14 @@ c:
 
     test("getDefinition errors throw", () {
       // when script doesn't exist at all
+      final def = registry.getDefinition("script_b");
       expect(
-        () async => registry.getDefinition("script_b"),
+        () async => def,
         throwsA(
           equals(
-            DerryError(
-              type: ErrorCode.scriptNotDefined,
-              body: {'script': "script_b", 'suggestions': registry.getPaths()},
+            ScriptNotDefinedError(
+              script: 'script_b',
+              suggestions: registry.getPaths(),
             ),
           ),
         ),
@@ -374,10 +375,7 @@ c:
         () async => registry.getDefinition("script_c"),
         throwsA(
           equals(
-            DerryError(
-              type: ErrorCode.invalidScript,
-              body: {'script': "script_c"},
-            ),
+            InvalidScriptError(script: 'script_c', paths: registry.getPaths()),
           ),
         ),
       );
@@ -390,10 +388,7 @@ c:
         () async => registry.getDefinition("script_d"),
         throwsA(
           equals(
-            DerryError(
-              type: ErrorCode.invalidScript,
-              body: {'script': "script_d", 'paths': registry.getPaths()},
-            ),
+            InvalidScriptError(script: 'script_d', paths: registry.getPaths()),
           ),
         ),
       );
@@ -408,10 +403,7 @@ c:
         () async => registry.getDefinition("script_e"),
         throwsA(
           equals(
-            DerryError(
-              type: ErrorCode.invalidScript,
-              body: {'script': "script_e", 'paths': registry.getPaths()},
-            ),
+            InvalidScriptError(script: 'script_e', paths: registry.getPaths()),
           ),
         ),
       );

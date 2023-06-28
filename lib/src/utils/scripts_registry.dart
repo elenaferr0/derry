@@ -1,5 +1,8 @@
 import 'package:derry/bindings.dart' as bindings;
 import 'package:derry/error.dart' show DerryError, ErrorCode;
+import 'package:derry/src/error/error_codes/invalid_script_error.dart';
+import 'package:derry/src/error/error_codes/script_not_defined_error.dart';
+import 'package:derry/src/error/error_codes/scripts_has_wrong_type_error.dart';
 import 'package:derry/utils.dart'
     show
         JsonMap,
@@ -54,23 +57,15 @@ class ScriptsRegistry {
 
       /// for when script is not defined at all
       if (scriptFound == null) {
-        throw DerryError(
-          type: ErrorCode.scriptNotDefined,
-          body: {
-            'script': scriptString,
-            'suggestions': getPaths(),
-          },
-        );
+        throw ScriptNotDefinedError(
+            script: scriptString, suggestions: getPaths());
       }
 
       // for when script is not a type we want
       if (scriptFound is! Map &&
           scriptFound is! List &&
           scriptFound is! String) {
-        throw DerryError(
-          type: ErrorCode.invalidScript,
-          body: {'script': scriptString},
-        );
+        throw ScriptsHasWrongTypeError();
       }
 
       // for when script is a map
@@ -80,10 +75,7 @@ class ScriptsRegistry {
             (scripts is List || scripts is String || scripts is Map);
 
         if (!validity) {
-          throw DerryError(
-            type: ErrorCode.invalidScript,
-            body: {'script': scriptString, 'paths': getPaths()},
-          );
+          throw InvalidScriptError(script: scriptString, paths: getPaths());
         }
       }
 

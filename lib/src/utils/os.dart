@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import '../../error.dart';
+import '../error/error_codes/invalid_os_error.dart';
 
 /// enum for OS types.
 enum OS {
@@ -32,7 +33,7 @@ enum OS {
 
   static OS fromString(String key) {
     if (!OS.getKeys().contains(key)) {
-      throw DerryError(type: ErrorCode.invalidOs, body: {'os': key});
+      throw InvalidOsError(os: key);
     }
     return OS.values.firstWhere((element) => element.key == key);
   }

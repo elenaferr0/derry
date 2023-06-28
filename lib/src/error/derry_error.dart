@@ -1,21 +1,17 @@
-import 'package:derry/src/error/error_code.dart' show ErrorCode;
+import 'dart:io';
+
 import 'package:equatable/equatable.dart' show EquatableMixin;
+import 'package:tint/tint.dart';
 
-/// A custom error type used to catch custom errors
-/// with the type [ErrorCode].
-class DerryError extends Error with EquatableMixin {
-  /// Type of error.
-  final ErrorCode type;
+abstract class DerryError extends Error with EquatableMixin {
+  DerryError() {
+    buffer.writeln('$prefix Code ${runtimeType.toString().cyan()}');
+  }
 
-  /// Body message of the error.
-  final Map<String, dynamic> body;
+  final buffer = StringBuffer();
+  final prefix = 'derry ${"ERR!".red()}';
 
-  /// Constructs a constant [DerryError] instance.
-  DerryError({
-    required this.type,
-    this.body = const {},
-  });
-
-  @override
-  List<Object> get props => [type, body];
+  void print() {
+    stderr.write(buffer.toString());
+  }
 }
